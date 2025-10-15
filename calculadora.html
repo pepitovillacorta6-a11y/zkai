@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Forex</title>
+    <style>
+        /* RESET COMPLETO */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f, #2d2d2d);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffffff;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #b0b0b0;
+            font-size: 1rem;
+        }
+
+        .card {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #444;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #2d2d2d;
+            color: #ffffff;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        .btn {
+            width: 100%;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-highlight {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 18px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 18px 0;
+        }
+
+        .risk-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .risk-low {
+            background: #155724;
+            color: #90ee90;
+        }
+
+        .risk-medium {
+            background: #856404;
+            color: #ffd700;
+        }
+
+        .risk-high {
+            background: #721c24;
+            color: #ff6b6b;
+        }
+
+        .info-text {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .row {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Calculadora Forex</h1>
+            <p>Calcula el tamaño de posición perfecto</p>
+        </div>
+
+        <!-- Capital -->
+        <div class="card">
+            <div class="section-title">
+                <span>💼</span>
+                <span>Capital de Trading</span>
+            </div>
+            <div class="input-group">
+                <label for="balance">Saldo de la cuenta ($)</label>
+                <input type="number" id="balance" value="10000" min="1" step="0.01">
+                <div class="info-text">Ingresa tu capital total disponible</div>
+            </div>
+        </div>
+
+        <!-- Riesgo -->
+        <div class="card">
+            <div class="section-title">
+                <span>🎯</span>
+                <span>Gestión de Riesgo</span>
+            </div>
+
+            <div class="input-group">
+                <label for="riskFixed">Monto a arriesgar ($)</label>
+                <input type="number" id="riskFixed" value="200" min="1" step="0.01">
+                <div class="info-text">Cantidad máxima que estás dispuesto a perder</div>
+            </div>
+
+            <div class="result-item">
+                <span>Porcentaje del capital:</span>
+                <span id="riskPercentDisplay" style="font-weight: bold; color: #3498db;">2.0%</span>
+            </div>
+        </div>
+
+        <!-- Operación -->
+        <div class="card">
+            <div class="section-title">
+                <span>⚙️</span>
+                <span>Configuración de Operación</span>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="input-group">
+                        <label for="pair">Par de Divisas</label>
+                        <select id="pair">
+                            <option value="EURUSD">EUR/USD</option>
+                            <option value="GBPUSD">GBP/USD</option>
+                            <option value="USDJPY">USD/JPY</option>
+                            <option value="AUDUSD">AUD/USD</option>
+                            <option value="USDCAD">USD/CAD</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <label for="leverage">Apalancamiento</label>
+                        <select id="leverage">
+                            <option value="10">1:10</option>
+                            <option value="20">1:20</option>
+                            <option value="30" selected>1:30</option>
+                            <option value="50">1:50</option>
+                            <option value="100">1:100</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="input-group">
+                        <label for="sl">Stop Loss (pips)</label>
+                        <input type="number" id="sl" value="30" min="1" step="1">
+                        <div class="info-text">Distancia en pips para stop loss</div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="input-group">
+                        <label for="tp">Take Profit (pips)</label>
+                        <input type="number" id="tp" value="60" min="1" step="1">
+                        <div class="info-text">Distancia en pips para take profit</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón de cálculo -->
+        <button class="btn" onclick="calculatePosition()">
+            📊 Calcular Position Size
+        </button>
+
+        <!-- Resultados -->
+        <div id="results" class="card results">
+            <div class="section-title">
+                <span>📈</span>
+                <span>Resultados del Cálculo</span>
+            </div>
+
+            <div class="result-item">
+                <span>Tamaño de posición:</span>
+                <span id="resultLots" style="font-weight: bold; color: #27ae60;">0.00 lotes</span>
+            </div>
+
+            <div class="result-item">
+                <span>Unidades:</span>
+                <span id="resultUnits" style="font-weight: bold;">0</span>
+            </div>
+
+            <div class="result-item">
+                <span>Riesgo por operación:</span>
+                <span id="resultRisk" style="font-weight: bold;">$0.00</span>
+            </div>
+
+            <div class="result-item">
+                <span>Margen requerido:</span>
+                <span id="resultMargin" style="font-weight: bold;">$0.00</span>
+            </div>
+
+            <div class="result-item">
+                <span>Valor por pip:</span>
+                <span id="resultPipValue" style="font-weight: bold;">$0.00</span>
+            </div>
+
+            <div class="result-highlight">
+                <div style="font-size: 0.9rem; opacity: 0.9;">GANANCIA POTENCIAL</div>
+                <div id="resultProfit" style="font-size: 1.4rem; font-weight: bold; margin-top: 8px;">$0.00</div>
+            </div>
+
+            <div class="result-item">
+                <span>Nivel de riesgo:</span>
+                <span id="resultRiskLevel">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== INICIALIZACIÓN ==========
+        console.log('🚀 Calculadora Forex iniciada');
+
+        // Esperar a que el DOM esté completamente cargado
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('✅ DOM cargado correctamente');
+            initializeCalculator();
+        });
+
+        function initializeCalculator() {
+            // Configurar event listeners
+            setupEventListeners();
+
+            // Calcular riesgo inicial
+            updateRiskDisplay();
+
+            console.log('🔄 Calculadora inicializada y lista');
+        }
+
+        function setupEventListeners() {
+            const inputs = ['balance', 'riskFixed', 'sl', 'tp'];
+
+            inputs.forEach(inputId => {
+                const inputElement = document.getElementById(inputId);
+                if (inputElement) {
+                    inputElement.addEventListener('input', function () {
+                        console.log(`📝 Input cambiado: ${inputId} = ${this.value}`);
+                        updateRiskDisplay();
+                    });
+                } else {
+                    console.error(`❌ No se encontró el elemento: ${inputId}`);
+                }
+            });
+
+            // Event listeners para selects
+            const selects = ['pair', 'leverage'];
+            selects.forEach(selectId => {
+                const selectElement = document.getElementById(selectId);
+                if (selectElement) {
+                    selectElement.addEventListener('change', function () {
+                        console.log(`🔄 Select cambiado: ${selectId} = ${this.value}`);
+                    });
+                }
+            });
+        }
+
+        function updateRiskDisplay() {
+            try {
+                const balance = parseFloat(document.getElementById('balance').value) || 0;
+                const riskFixed = parseFloat(document.getElementById('riskFixed').value) || 0;
+
+                const riskPercent = balance > 0 ? (riskFixed / balance * 100) : 0;
+
+                const displayElement = document.getElementById('riskPercentDisplay');
+                if (displayElement) {
+                    displayElement.textContent = `${riskPercent.toFixed(1)}%`;
+
+                    // Color según el riesgo
+                    if (riskPercent > 5) {
+                        displayElement.style.color = '#e74c3c';
+                    } else if (riskPercent > 2) {
+                        displayElement.style.color = '#f39c12';
+                    } else {
+                        displayElement.style.color = '#27ae60';
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error en updateRiskDisplay:', error);
+            }
+        }
+
+        function calculatePosition() {
+            console.log('🧮 Iniciando cálculo...');
+
+            try {
+                // Obtener valores de los inputs
+                const balance = parseFloat(document.getElementById('balance').value) || 0;
+                const riskFixed = parseFloat(document.getElementById('riskFixed').value) || 0;
+                const sl = parseFloat(document.getElementById('sl').value) || 0;
+                const tp = parseFloat(document.getElementById('tp').value) || 0;
+                const leverage = parseFloat(document.getElementById('leverage').value) || 30;
+                const pair = document.getElementById('pair').value;
+
+                console.log('📊 Datos obtenidos:', { balance, riskFixed, sl, tp, leverage, pair });
+
+                // Validaciones básicas
+                if (!balance || balance <= 0) {
+                    alert('❌ Ingresa un capital válido mayor a 0');
+                    return;
+                }
+
+                if (!riskFixed || riskFixed <= 0) {
+                    alert('❌ Ingresa un monto de riesgo válido mayor a 0');
+                    return;
+                }
+
+                if (!sl || sl <= 0) {
+                    alert('❌ Ingresa un Stop Loss válido mayor a 0');
+                    return;
+                }
+
+                // Valores de pip por par
+                const pipValues = {
+                    'EURUSD': 10,
+                    'GBPUSD': 10,
+                    'USDJPY': 9,
+                    'AUDUSD': 10,
+                    'USDCAD': 8
+                };
+
+                const pipValue = pipValues[pair] || 10;
+                console.log(`💰 Valor del pip para ${pair}: $${pipValue}`);
+
+                // CÁLCULOS PRINCIPALES
+                const riskPerLot = sl * pipValue;
+                const lots = riskFixed / riskPerLot;
+                const units = lots * 100000;
+                const marginRequired = (lots * 100000) / leverage;
+                const positionPipValue = lots * pipValue;
+                const potentialProfit = tp * positionPipValue;
+                const actualRiskPercent = (riskFixed / balance * 100);
+
+                console.log('📈 Resultados calculados:', {
+                    lots, units, marginRequired, positionPipValue, potentialProfit
+                });
+
+                // ACTUALIZAR INTERFAZ
+                updateResultElement('resultLots', `${lots.toFixed(2)} lotes`);
+                updateResultElement('resultUnits', Math.round(units).toLocaleString());
+                updateResultElement('resultRisk', `$${riskFixed.toFixed(2)}`);
+                updateResultElement('resultMargin', `$${marginRequired.toFixed(2)}`);
+                updateResultElement('resultPipValue', `$${positionPipValue.toFixed(2)}`);
+                updateResultElement('resultProfit', `$${potentialProfit.toFixed(2)}`);
+
+                // Actualizar nivel de riesgo
+                updateRiskLevel(actualRiskPercent);
+
+                // Mostrar resultados
+                showResults();
+
+                console.log('✅ Cálculo completado exitosamente');
+
+            } catch (error) {
+                console.error('❌ Error en calculatePosition:', error);
+                alert('❌ Ocurrió un error en el cálculo. Revisa la consola para más detalles.');
+            }
+        }
+
+        function updateResultElement(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = value;
+            } else {
+                console.error(`❌ No se encontró el elemento: ${elementId}`);
+            }
+        }
+
+        function updateRiskLevel(riskPercent) {
+            const riskLevelElement = document.getElementById('resultRiskLevel');
+            if (!riskLevelElement) return;
+
+            let riskLevel, riskClass;
+
+            if (riskPercent > 5) {
+                riskLevel = 'ALTO ⚠️';
+                riskClass = 'risk-high';
+            } else if (riskPercent > 2) {
+                riskLevel = 'MEDIO 📊';
+                riskClass = 'risk-medium';
+            } else {
+                riskLevel = 'BAJO ✅';
+                riskClass = 'risk-low';
+            }
+
+            riskLevelElement.innerHTML = `<span class="risk-badge ${riskClass}">${riskLevel}</span>`;
+        }
+
+        function showResults() {
+            const resultsElement = document.getElementById('results');
+            if (resultsElement) {
+                resultsElement.classList.add('show');
+
+                // Scroll suave a los resultados
+                resultsElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+            }
+        }
+
+        // Función de debug para verificar elementos
+        function debugElements() {
+            console.log('🔍 Debug de elementos:');
+            const elements = [
+                'balance', 'riskFixed', 'sl', 'tp', 'pair', 'leverage',
+                'resultLots', 'resultUnits', 'resultRisk', 'resultMargin',
+                'resultPipValue', 'resultProfit', 'resultRiskLevel', 'results'
+            ];
+
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                console.log(`${id}:`, element ? '✅' : '❌');
+            });
+        }
+
+        // Ejecutar debug al cargar (opcional)
+        window.addEventListener('load', debugElements);
+
+    </script>
+</body>
+
+</html>
